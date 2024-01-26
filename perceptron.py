@@ -1,7 +1,4 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.datasets import load_breast_cancer
 
 class Perceptron:
     def __init__(self, epochs=100, alpha=0.1):
@@ -30,16 +27,3 @@ class Perceptron:
     def predict(self, X):
         self.sigmoid(np.dot(X, self.Ws) + self.b)
         return [1 if i > 0.5 else 0 for i in self.sigmoid(np.dot(X, self.Ws) + self.b)]
-    
-cancer = load_breast_cancer()
-X = cancer.data
-y = cancer.target
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-perceptron = Perceptron(epochs=2000, alpha=0.01)
-perceptron.fit(X_train, y_train)
-y_pred = perceptron.predict(X_test)
-
-print(f"Accuracy: {np.round(accuracy_score(y_test, y_pred),2)*100}%")
-print(confusion_matrix(y_test, y_pred))
