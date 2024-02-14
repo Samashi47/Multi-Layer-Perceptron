@@ -1,22 +1,14 @@
 import numpy as np
 
 class MLPClassifier:
-    def __init__(self,nFeats, hlnNeur, nClasses, h_act='relu', o_act='relu', alpha=0.01):
-        self.nFeats = nFeats
-        self.hlnNeur = hlnNeur
-        self.nClasses = nClasses
-        self.layers = [nFeats, hlnNeur, nClasses]
-        self.layer_activations = [h_act,o_act]
+    def __init__(self, nFeats: int, hlayers: list, nClasses: int, layer_activations : list =['relu','relu'], alpha: float=0.01):
+        self.layers = [nFeats] + hlayers + [nClasses]
+        self.layer_activations = layer_activations
         self.neurons = [np.zeros(i) for i in self.layers]
         self.biases = [np.random.uniform(-0.5, 0.5, size=i) for i in self.layers[1:]]
-        self.weights = [np.random.uniform(-0.5, 0.5, size=(self.layers[i], self.layers[i-1])) for i in range(1, 3)]
+        self.weights = [np.random.uniform(-0.5, 0.5, size=(self.layers[i], self.layers[i-1])) for i in range(1, len(self.layers))]
         self.activations = [self.get_activation_fn(act) for act in self.layer_activations]
         self.alpha = alpha
-        self.fitness = 0
-        self.cost = 0
-        self.delta_biases = [np.zeros_like(bias) for bias in self.biases]
-        self.delta_weights = [np.zeros_like(weight) for weight in self.weights]
-        self.delta_count = 0
 
     def sigmoid(self, x, derivative=False):
         if derivative:
@@ -64,10 +56,7 @@ class MLPClassifier:
                 self.neurons[i][j] = self.activate(value, layer)
         return self.neurons[-1]
     
-    def backpropagate(self, inputs, expected):
-        output = self.feed_forward(inputs)
-        self.cost = np.sum((output - expected)**2) / 2
-
+    def backpropagate(self, output, expected):
         gamma = [np.zeros(layer) for layer in self.layers]
         layer = len(self.layers) - 2
 
@@ -91,8 +80,8 @@ class MLPClassifier:
         y = y.astype(int)
         for _ in range(epochs):
             for i in range(len(X)):
-                self.backpropagate(X[i], np.eye(self.layers[2])[y[i]])
-    
+                self.backpropagate(self.feed_forward(X[i]), np.eye(self.layers[-1])[y[i]])
+            
     def predict(self, X):
         predictions = []
         for i in range(len(X)):
